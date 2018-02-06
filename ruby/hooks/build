@@ -1,2 +1,6 @@
 #!/bin/sh
-docker build --build-arg RUBY_VERSION=$DOCKER_TAG -t $IMAGE_NAME .
+if [ "$DOCKER_TAG" = "latest" ]; then
+  docker build -t $IMAGE_NAME .
+else
+  docker build --build-arg RUBY_VERSION=$DOCKER_TAG -t $IMAGE_NAME .
+fi
