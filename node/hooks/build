@@ -1,6 +1,0 @@
-#!/bin/sh
-if [ "$DOCKER_TAG" = "latest" ]; then
-  docker build -t $IMAGE_NAME .
-else
-  docker build --build-arg NODE_VERSION="${DOCKER_TAG#node-}" -t $IMAGE_NAME .
-fi
