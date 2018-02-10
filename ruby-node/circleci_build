@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ "${DOCKER_TAG}" = "latest" ]; then
+  docker build --cache-from=image -t kit494way/ruby-node ${DOCKERFILE_DIR}
+else
+  docker build --cache-from=image --build-arg RUBY_VERSION=$(echo ${DOCKER_TAG} | cut -d- -f2)
+  --build-arg NODE_VERSION=$(echo ${DOCKER_TAG} | cut -d- -f4) -t ${DOCKER_IMAGE_NAME} ${DOCKERFILE_DIR}
+fi
