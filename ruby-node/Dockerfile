@@ -35,6 +35,9 @@ RUN eval "$(anyenv init -)" \
     && ndenv install ${INSTALL_NODE_VERSION} \
     && ndenv global ${INSTALL_NODE_VERSION}
 
+RUN eval "$(anyenv init -)" \
+    && rbenv exec gem install bundler
+
 ENV PATH=/usr/local/anyenv/envs/rbenv/shims:/usr/local/anyenv/envs/ndenv/shims:${PATH}
 
 CMD ["/bin/bash", "-c"]
