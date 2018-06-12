@@ -64,6 +64,7 @@ workflows:
                 - anyenv
                 - ruby-node
                 - rsync
+                - selenium-standalone-chrome
               ignore:
                 - master
             tags:
