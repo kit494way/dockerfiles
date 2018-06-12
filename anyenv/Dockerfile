@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 LABEL maintainer="KITAGAWA Yasutaka <kit494way@gmail.com>"
 
 RUN apt-get update \
-    && apt-get install -y git \
+    && apt-get install -y git tzdata pkg-config \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
