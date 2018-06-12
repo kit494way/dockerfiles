@@ -71,3 +71,13 @@ workflows:
               only:
                 - /anyenv\/.+/
                 - /ruby-node\/.+/
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only:
+                - selenium-standalone-chrome
+    jobs:
+      - build
