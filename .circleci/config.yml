@@ -64,9 +64,20 @@ workflows:
                 - anyenv
                 - ruby-node
                 - rsync
+                - selenium-standalone-chrome
               ignore:
                 - master
             tags:
               only:
                 - /anyenv\/.+/
                 - /ruby-node\/.+/
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only:
+                - selenium-standalone-chrome
+    jobs:
+      - build
