@@ -54,7 +54,8 @@ jobs:
             docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASSWORD}
             docker push "${DOCKER_IMAGE_NAME}"
   build_for_ecr:
-    working_directory: /work
+    # working_directory: /work
+    working_directory: ~/workspace
     docker:
       - image: docker:stable-git
     steps:
@@ -105,7 +106,7 @@ jobs:
           paths:
             - docker-image
   deploy_to_ecr:
-    working_directory: /work
+    working_directory: ~/workspace
     docker:
       - image: circleci/python:3.6.1
     environment:
