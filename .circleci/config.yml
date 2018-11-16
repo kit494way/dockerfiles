@@ -97,8 +97,8 @@ jobs:
       - run:
         name: Save Docker Image to workspace
         command: |
-            mkdir docker-image
-            cp /caches/image.tar docker-image/
+          mkdir docker-image
+          cp /caches/image.tar docker-image/
       - persist_to_workspace:
           root: .
           paths:
