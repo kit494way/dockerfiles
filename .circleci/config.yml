@@ -160,7 +160,7 @@ workflows:
                 - /ruby-node\/.+/
   build_deploy_to_ecr:
     jobs:
-      - build_for_ecr
+      - build_for_ecr:
           filters:
             branches:
               only:
