@@ -118,6 +118,8 @@ jobs:
           at: .
       - restore_cache:
           key: v1-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
       - run:
           name: Install the AWS CLI
           command: |
