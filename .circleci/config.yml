@@ -53,6 +53,94 @@ jobs:
             source $BASH_ENV
             docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASSWORD}
             docker push "${DOCKER_IMAGE_NAME}"
+  build_for_ecr:
+    working_directory: /work
+    docker:
+      - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/image.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/image.tar | true
+      - run:
+          name: Export environment variables
+          command: |
+            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            echo 'export DOCKER_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
+      - run:
+          name: Build Docker image
+          command: |
+            source $BASH_ENV
+            if [ -e "${DOCKERFILE_DIR}/circleci_build" ]; then
+              source ${DOCKERFILE_DIR}/circleci_build
+            else
+              docker build --cache-from=image -t ${DOCKER_IMAGE_NAME} ${DOCKERFILE_DIR}/
+            fi
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            source $BASH_ENV
+            mkdir -p /caches
+            docker save -o /caches/image.tar ${DOCKER_IMAGE_NAME}
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/image.tar
+      - run:
+        name: Save Docker Image to workspace
+        command: |
+            mkdir docker-image
+            cp /caches/image.tar docker-image/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker-image
+  deploy_to_ecr:
+    working_directory: /work
+    docker:
+      - image: circleci/python:3.6.1
+    environment:
+      AWS_DEFAULT_OUTPUT: json
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: v1-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install the AWS CLI
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          key: v1-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: Load image
+          command: |
+            docker load --input workspace/docker-image/image.tar
+      - run:
+          name: Setup common environment variables
+          command: |
+            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            echo 'export DOCKER_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
+      - run:
+          name: Push image to ECR
+          command: |
+            . venv/bin/activate
+            eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+            docker push ${DOCKER_IMAGE_NAME}
 workflows:
   version: 2
   build_image:
@@ -70,3 +158,17 @@ workflows:
               only:
                 - /anyenv\/.+/
                 - /ruby-node\/.+/
+  build_deploy_to_ecr:
+    jobs:
+      - build_for_ecr
+          filters:
+            branches:
+              only:
+                - sample
+      - deploy_to_ecr:
+          requires:
+            - build_for_ecr
+          filters:
+            branches:
+              only:
+                - sample
