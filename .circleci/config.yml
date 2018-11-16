@@ -106,9 +106,9 @@ jobs:
           paths:
             - docker-image
   deploy_to_ecr:
-    # working_directory: ~/workspace
+    working_directory: ~/workspace
     docker:
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.6
     environment:
       AWS_DEFAULT_OUTPUT: json
     steps:
@@ -123,7 +123,6 @@ jobs:
       - run:
           name: Install the AWS CLI
           command: |
-            pwd
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
