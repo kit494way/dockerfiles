@@ -74,7 +74,7 @@ jobs:
           name: Export environment variables
           command: |
             echo 'export DOCKERFILE_DIR=${CIRCLE_BRANCH}' >> $BASH_ENV
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}/${DOCKERFILE_DIR}"' >> $BASH_ENV
             echo 'export DOCKER_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
       - run:
           name: Build Docker image
