@@ -128,12 +128,14 @@ jobs:
       - run:
           name: Setup common environment variables
           command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
+            echo 'export DOCKERFILE_DIR=${CIRCLE_BRANCH}' >> $BASH_ENV
+            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}/${DOCKERFILE_DIR}"' >> $BASH_ENV
             echo 'export DOCKER_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
       - run:
           name: Push image to ECR
           command: |
             . venv/bin/activate
+            aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME} >/dev/null 2>&1 || aws ecr create-repository --repository-name ${ECR_REPOSITORY_NAME}
             eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
             docker push ${DOCKER_IMAGE_NAME}
 workflows:
